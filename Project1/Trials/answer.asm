@@ -1,0 +1,213 @@
+#     F i n d  T u m b l i n g G e o r g e  i n  a  C r o w d
+#
+#
+# This routine finds an exact match of George's face which may be
+# rotated in a crowd of tumbling (rotated) faces.
+#
+# <date>                               <your name here>
+
+.data
+Array:  .alloc    1024
+
+.text
+
+FindGeorge:    addi    $1, $0, Array        # point to array base
+        swi    570            # generate tumbling crowd
+
+# your code goes here
+        addi     $20, $0, 0
+        addi    $21, $0, 0
+        addi    $1, $0, 0
+        addi     $5, $0, 1 #white
+        addi    $6, $0, 2 #red
+        addi    $7, $0, 3 #blue
+        addi     $8, $0, 5 #yellow
+        addi    $9, $0, 7 #green
+        addi    $10, $0, 8 #black
+
+loop1:        addi    $1, $1, 5
+        slti    $22, $20, 3776    
+        beq    $22, $0, reset
+        addi    $20, $20, 320
+        lb    $4, Array($20)
+        beq    $4, $5, step1    
+        lb    $4, Array($1)
+        #beq    $4, $5, step11
+        slti    $14, $1, 4096
+        bne    $14, $0, loop1
+
+reset:        addi    $21, $21, 1
+        addi    $20, $21, 0
+        addi    $1, $1, -5
+        j    loop1
+
+step1:        addi    $19, $20, 9
+        lb    $4, Array($19)
+        beq    $4, $7, step2
+        addi    $19, $20, -9        
+        lb    $4, Array($19)
+        beq    $4, $7, step3
+        j    loop1
+
+step2:        addi    $17, $20, 3
+        lb    $11, Array($17)
+        bne    $11, $8, loop1
+        addi    $12, $20, 1
+        lb     $11, Array($12)
+        bne    $11, $6, loop1
+        addi    $12, $20, -1
+        lb     $11, Array($12)
+        bne    $11, $6, loop1
+        addi    $13, $20, 64
+        lb    $11, Array($13)
+        beq    $11, $6, step22
+        addi    $13, $20, -64
+        lb    $11, Array($13)
+        beq    $11, $6, step23
+        addi    $14, $20, 4
+        lb    $11, Array($14)
+        bne    $11, $8, loop1
+        addi    $16, $20, 6
+        lb    $11, Array($16)
+        beq    $11, $10, step2mid
+        addi    $13, $20, 128
+        lb    $11, Array($13)
+        beq    $11, $6, step212
+        addi    $13, $20, -128
+        lb    $11, Array($13)
+        beq    $11, $6, step213
+        j    loop1
+
+step3:        addi    $17, $20, -3
+        lb    $11, Array($17)
+        bne    $11, $8, loop1
+        addi    $12, $20, -1
+        lb     $11, Array($12)
+        bne    $11, $6, loop1
+        addi    $12, $20, 1
+        lb     $11, Array($12)
+        bne    $11, $6, loop1
+        addi    $13, $20, 64
+        lb    $11, Array($13)
+        beq    $11, $6, step32
+        addi    $13, $20, -64
+        lb    $11, Array($13)
+        beq    $11, $6, step33
+        addi    $14, $20, -4
+        lb    $11, Array($14)
+        bne    $11, $8, loop1
+        addi    $16, $20, -6
+        lb    $11, Array($16)
+        beq    $11, $10, step3mid
+        addi    $13, $20, 128
+        lb    $11, Array($13)
+        beq    $11, $6, step312
+        addi    $13, $20, -128
+        lb    $11, Array($13)
+        beq    $11, $6, step313
+        j    loop1
+
+step3mid:    addi    $15, $20, -130
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi    $15, $20, -2
+        lb    $11, Array($15)
+        bne    $11, $8, loop1
+        addi    $25, $19, 0
+        addi    $26, $25, 11    
+        j    exit
+
+step2mid:    addi    $15, $20, 130
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi    $15, $20, 2
+        lb    $11, Array($15)
+        bne    $11, $8, loop1
+        addi    $25, $19, 0
+        addi    $26, $25, -11    
+        j    exit
+
+step312:    addi    $15, $20, 60
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $15, 2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, -64
+        addi    $26, $25, 11
+        j    exit
+
+step212:    addi    $15, $20, 68
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $15, -2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, -64
+        addi    $26, $25, -11
+        j    exit
+        
+step213:    addi    $15, $20, -60
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $15, -2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, 64
+        addi    $26, $25, -11
+        j    exit
+
+step313:    addi    $15, $20, -68
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $15, 2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, 64
+        addi    $26, $25, 11
+        j    exit    
+
+step22:        addi    $15, $20, 4
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $20, 2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, -128
+        addi    $26, $25, -11
+        j    exit        
+step32:        addi    $15, $20, -4
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $20, -2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, -128
+        addi    $26, $25, 11
+        j    exit        
+  
+step23:        addi    $15, $20, 4
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $20, 2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, 128
+        addi    $26, $25, -11
+        j    exit    
+        
+step33:        addi    $15, $20, -4
+        lb    $11, Array($15)
+        bne    $11, $10, loop1
+        addi    $15, $20, -2
+        lb    $11, Array($15)
+        bne    $11, $9, loop1
+        addi     $25, $19, 128
+        addi    $26, $25, 11
+        j    exit    
+
+exit:        add    $2, $0, $26
+        sll    $2, $2, 16
+        or    $2, $2, $25     
+        swi    571            # submit answer and check
+        jr    $31

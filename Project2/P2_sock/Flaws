@@ -1,0 +1,13 @@
+Assumptions:
+
+Number 1:
+In the 5 worlds provided there wasn't a situation where there was a monkey or branch hanging over the tree bark. When my code completes the advanced collision it deletes everything above where the tree tile is hit by the cannonball. Technically if something was in the same column as the tree trunk and it wasnt connected to the hit tree trunk then it shouldn't be deleted. Since none of the 5 worlds provided had this situation I deleted everything above in the column where the cannon ball hits the tree trunk. 
+
+I figured out where the monkey location and have a 100% accuracy in any type of world. 
+
+Number 2:
+In the 5 worlds provided there wasn't a situation where the left most monkey was hanging from a tree branch that was connected to a tree bark other than on the right side. also all the worlds either had a negative sloping branch that was attached to the tree bark. Since this was the case, my code would only give the proper hint for the joint if the branch is negative sloping and attached on the right side of the tree trunk, which was the case for all of the 5 worlds provided to us.
+
+Number 3:
+
+I was unable to figure out how the advanced collisions where it involved collapsing all the attached branches to the tree trunk and the if I hit a tree branch the rest of the branch doesnt collapse either. I was only able to make the tree trunk collapse when the cannonball hits. THis should deserve some partial credit. 

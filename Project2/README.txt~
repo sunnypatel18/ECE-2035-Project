@@ -1,0 +1,43 @@
+=============================================
+Battleship
+	by Clifton Thomas
+
+=============================================
+Institution: Georgia Institute of Technology
+Class: ECE2035
+Project: Battleship
+---------------------------------------------
+
+
+---------------------------------------------
+Pre-requisites:
+
+-install pySerial python module on host pc
+
+-construct circuit as outlined in 'BattleshipPinout.pdf'
+
+-place 'bomb.wav' file inside '/wavfiles' directory on microSD card
+
+-unzip 'Battleship_MbedFiles.zip' and compile its components in mbed cloud compiler
+
+-flash binaries to mbed
+----------------------------------------------
+
+
+----------------------------------------------
+Usage:
+
+-ON HOST PC: execute python script as 'python battleship.py' from terminal
+
+-ON MBED: use reset button to run the program binary
+----------------------------------------------
+
+
+----------------------------------------------
+Misc:
+-to find which com port the serial device is linked to, type the following at the terminal:
+	LINUX:   'ls /dev/ttyACM*'
+	MAC OSX: 'ls /dev/tty.usbmodem*'
+==============================================
+END
+==============================================

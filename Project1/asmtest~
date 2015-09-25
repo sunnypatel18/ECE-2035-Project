@@ -1,0 +1,80 @@
+Check0Blue:	addi	$1, $1, 320
+		lb	$2, Array($1)
+		beq	$2, $5, Check0White
+		bne	$2, $5, Loop
+
+Check0White:	addi	$1, $1, -574
+		lb	$2, Array($1)
+		beq	$2, $6, Check0Red
+		bne	$2, $5, Loop
+
+Check0Red:	addi	$1, $1, -64
+		lb	$2, Array($1)
+		beq	$2, $7, Check0Yellow
+		bne	$2, $5, Loop
+
+Check0Yellow:	addi	$1, $1, 191
+		lb	$2, Array($1)
+		beq	$2, $8, Check0
+		bne	$2, $5, Loop
+
+Check180Black:	addi	$1, $1, -256
+		lb	$2, Array($1)
+		beq	$2, $4, Check180Blue
+		bne	$2, $5, Loop
+
+Check180Blue:	addi	$1, $1, -320
+		lb	$2, Array($1)
+		beq	$2, $5, Check180Red
+		bne	$2, $5, Loop
+
+Check180Red:	addi	$1, $1, 642
+		lb	$2, Array($1)
+		beq	$2, $7, Check180Yellow
+		bne	$2, $5, Loop
+		bne	$2, $5, Loop
+
+Check180Yellow:	addi	$1, $1, -191
+		lb	$2, Array($1)
+		beq	$2, $8, Check180
+		bne	$2, $5, Loop
+
+Check90Black:	addi	$1, $1, -4
+		lb	$2, Array($1)
+		beq	$2, $4, Check90Blue
+		bne	$2, $5, Loop
+
+Check90Blue:	addi	$1, $1, -5
+		lb	$2, Array($1)
+		beq	$2, $5, Check90Red
+		bne	$2, $5, Loop
+
+Check90Red:	addi	$1, $1, 138
+		lb	$2, Array($1)
+		beq	$2, $7, Check90Yellow
+		bne	$2, $5, Loop
+
+Check90Yellow:	addi	$1, $1, -67
+		lb	$2, Array($1)
+		beq	$2, $8, Check90
+		bne	$2, $5, Loop
+
+Check270Blue:	addi	$1, $1, 5
+		lb	$2, Array($1)
+		beq	$2, $5, Check270White
+		bne	$2, $5, Loop
+
+Check270White:	addi	$1, $1, -9
+		lb	$2, Array($1)
+		beq	$2, $6, Check270Red
+		bne	$2, $5, Loop
+
+Check270Red:	addi	$1, $1, 127
+		lb	$2, Array($1)
+		beq	$2, $7, Check270Yellow
+		bne	$2, $5, Loop
+
+Check270Yellow:	addi	$1, $1, 67
+		lb	$2, Array($1)
+		beq	$2, $8, Check270
+		bne	$2, $5, Loop

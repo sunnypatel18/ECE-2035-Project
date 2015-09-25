@@ -1,0 +1,421 @@
+/**********************************
+ * Author: Seungcheol Baek
+ * Institution: Georgia Tech
+ *
+ * Title: MAIN
+ * Class: ECE2035
+ * Assignment: Project 2
+ **********************************/
+
+//includes
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+#include <cstdarg>
+#include "mbed.h"
+#include "rtos.h"
+#include "TextLCD.h"
+#include "SDFileSystem.h"
+#include "CommModule.h"
+#include "wave_player.h"
+#include "FATFileSystem.h"
+
+//defines
+#define BAUDRATE            9600
+#define BUFFSIZE            100
+#define GRAVITY             1.0
+#define PHIGH               10   // NEW
+#define PLOW                5    // NEW
+#define PI                  3.141592653589793238462643f
+#define BOMB_WAVFILE        "/sd/wavfiles/bomb.wav"
+#define MONKEY_WAVFILE      "/sd/wavfiles/monkey.wav"
+#define ACK                 "status-ack"
+
+//function prototypes
+int invert(int value);
+void print(const char *format, ...);
+void lowerCase(char *src);
+void startGame(void);
+void waitForAck(void);
+void playBombSound(void);
+void playMonkeySound(void);
+void pb1_hit_callback(void);
+void pb2_hit_callback(void);
+void pb3_hit_callback(void);
+void pb4_hit_callback(void);
+void getworld (int**world, char *World);
+void updateShot(int row, int column, int del);
+void colorTile(int row, int column, int strength);
+void deleteTile(int row, int column);
+void paaUpdate(int power, int angle);
+void hint(int row, int column, int power, int angle);
+
+//declare functions (assembly subroutines)
+extern "C" void setup_sequence(void);
+extern "C" void seg_driver_initialize(void);
+extern "C" void seg_driver(int value);
+
+//initialize hardware
+SDFileSystem sd(p5, p6, p7, p8, "sd"); // mosi, miso, sck, cs
+TextLCD lcd(p26, p25, p24, p23, p22, p21); // rs, e, d4-d7
+AnalogOut DACout(p18);
+wave_player waver(&DACout);
+DigitalIn pb1(p30);
+DigitalIn pb2(p29);
+DigitalIn pb3(p28);
+DigitalIn pb4(p27);
+
+//communication device
+commSerial serDevice(USBTX, USBRX, BAUDRATE); //tx, rx
+
+// Global variables for push buttons
+char volatile power=PHIGH, angle=45, fire;   // NEW
+
+//main
+int main() {
+    //initialize and clear 7-Segment Display (assembly subroutine)
+    setup_sequence();
+    seg_driver_initialize();
+    seg_driver(0);
+
+    // Use internal pullups for pushbuttons
+    pb1.mode(PullUp);    
+    pb2.mode(PullUp);
+    pb3.mode(PullUp);
+    pb4.mode(PullUp);
+
+    //variables
+    char World[10000];
+  
+    //check for wav file
+    lcd.cls();
+    lcd.printf("Locating WAV file...");
+    FILE *test_file;
+    while(1) {
+        test_file=fopen(BOMB_WAVFILE,"r");
+        if(test_file != NULL) {break;}
+        wait(0.5);
+    }
+    fclose(test_file);
+    while(1) {
+        test_file=fopen(MONKEY_WAVFILE,"r");
+        if(test_file != NULL) {break;}
+        wait(0.5);
+    }
+    fclose(test_file);
+    
+    //notification
+    lcd.cls();
+    lcd.printf("Angry Monkeys");
+    wait(1);
+
+    
+    /******** HW 3 *********/
+
+    /** HW3.A During the check off, You should show the seg_driver is working correctly **/
+    int i;
+    for(i=0;i<10;i++){
+            seg_driver(i);
+            wait(0.3);
+    }
+    
+    /** HW3.B During the check off, You should show the pushbuttons are debounced **/
+    
+    //temp variables
+    int num_cannon=30, val1, val2, val3, val4;
+    
+    fire=0; //pb4 is set to fire
+    lcd.cls();    
+    while(fire<9){
+        
+        /****   BEGIN - your code goes here for HW3.B  ****/
+        
+        //read inputs
+        val1 = invert(pb1.read());
+        val2 = invert(pb2.read());
+        val3 = invert(pb3.read());
+        val4 = invert(pb4.read());
+        
+        if(val1){
+            pb1_hit_callback(); //power 
+        }
+        if(val2){
+            pb2_hit_callback(); //angle
+        }
+        if(val3){
+            pb3_hit_callback(); //angle
+        }
+        if(val4){
+            pb4_hit_callback(); //fire
+        }
+        
+        //have fun... 
+        
+        /****    END - your code stops here   ****/
+        
+        //print lcd
+        lcd.cls();
+        lcd.printf("Left cannon:%d\n", num_cannon);
+        if(power==PHIGH)                         \\ NEW
+            lcd.printf("Angle:%d PHIGH", angle); \\ NEW
+        else                                     \\ NEW
+            lcd.printf("Angle:%d PLOW", angle);  \\ NEW
+        
+        wait(0.02);                              \\ NEW
+        
+    }
+   
+    /******** HW 3 END*********/
+    /** Note that you can use the HW3 for the Project 2 by moving it to the appropriate place in the Project 2. 
+        If you do not want to use HW3 for the Project 2, then you can simply remove it after check off. **/
+    
+    
+    /******** Project 2 *********/    
+    //loop
+    while(1) {
+        
+        //synchronize front end display  
+        startGame();                            
+
+        //receive World
+        serDevice.receiveData(World);            
+        wait(1);
+        
+        //get world that will be used for your work
+        int *world;
+        getworld(&world, World);
+        
+        /****   BEGIN - your code goes here for project 2  ****/
+        
+        //debug statements
+        print("testing");
+        print("string1: %s\nstring2: %s", "hello", "world");
+        print("int: %d, int: %d", world[2], world[3]);
+        
+        //Just for test...
+        for(i=1;i<10;i++){
+            updateShot(i-1,i,0);
+            wait(1);
+        } 
+                       
+        playBombSound();
+        playMonkeySound();
+        
+        for(i=0;i<5;i++){       
+            deleteTile(world[4*i+2],world[4*i+3]);
+            wait(1);
+        }
+        //Just for test ends...
+        
+        
+        //have fun... 
+        
+        /****    END - your code stops here   ****/
+        free(world);  
+    }
+    //end loop
+}
+
+//fcn to send update
+void updateShot(int row, int column, int del){
+    //temp variables
+    char buffer[BUFFSIZE];
+    
+    //construct message
+    sprintf(buffer, "%s-%d-%d-%d;", "update", row, column, del);
+
+    //send message
+    serDevice.sendData(buffer);
+}
+
+//fcn to send color
+void colorTile(int row, int column, int strength){
+    //temp variables
+    char buffer[BUFFSIZE];
+    
+    //construct message
+    sprintf(buffer, "%s-%d-%d-%d;", "color", row, column, strength);
+
+    //send message
+    serDevice.sendData(buffer);
+}    
+    
+//fcn to send delete
+void deleteTile(int row, int column){
+    //temp variables
+    char buffer[BUFFSIZE];
+    
+    //construct message
+    sprintf(buffer, "%s-%d-%d;", "delete", row, column);
+
+    //send message
+    serDevice.sendData(buffer);
+} 
+
+//fcn to send power and angle
+void paaUpdate(int power, int angle){
+    //temp variables
+    char buffer[BUFFSIZE];
+    
+    //construct message
+    sprintf(buffer, "%s-%d-%d;", "paa", power, angle);
+
+    //send message
+    serDevice.sendData(buffer);
+} 
+
+//fcn to send hint
+void hint(int row, int column, int power, int angle){
+    //temp variables
+    char buffer[BUFFSIZE];
+    
+    //construct message
+    sprintf(buffer, "%s-%d-%d-%d-%d;", "hint", row, column, power, angle);
+
+    //send message
+    serDevice.sendData(buffer);
+}
+
+//fcn to get acknowledgement from serial peripheral
+void waitForAck(void) {
+    //get acknowlegement
+    char buffer[BUFFSIZE];
+    while(1) {
+        serDevice.receiveData(buffer);
+        lowerCase(buffer);
+        if(strcmp(ACK, buffer) == 0) {
+            break;
+        }
+        memset(&buffer[0],0,strlen(buffer));     
+    }
+    return;
+}
+
+//fcn to initialize the frontend display
+void startGame(void) {
+    //temp variables
+    char buffer[BUFFSIZE];
+
+    //construct message
+    sprintf(buffer, "start");
+
+    //send message
+    serDevice.sendData(buffer);
+
+    //wait for acknowledgement
+    waitForAck();
+}
+
+//fcn to play bomb noise
+void playBombSound(void) {
+    //open wav file
+    FILE *wave_file;
+    wave_file=fopen(BOMB_WAVFILE,"r");
+    
+    //play wav file
+    waver.play(wave_file);
+    
+    //close wav file
+    fclose(wave_file);
+}
+
+//fcn to play bomb noise
+void playMonkeySound(void) {
+    //open wav file
+    FILE *wave_file;
+    wave_file=fopen(MONKEY_WAVFILE,"r");
+    
+    //play wav file
+    waver.play(wave_file);
+    
+    //close wav file
+    fclose(wave_file);
+}
+
+//fcn to print to console
+void print(const char *format, ...) {
+    //temp variables
+    char buffer[BUFFSIZE];
+    char temp[BUFFSIZE-6];
+    
+    //construct message part 1
+    sprintf(buffer, "print-");
+    
+    //construct message part 2
+    va_list arguments;
+    va_start(arguments, format);
+    vsnprintf(temp, BUFFSIZE-7, format, arguments);
+    va_end(arguments);
+    
+    //concatenate parts
+    strcat(buffer, temp);
+    
+    //send message
+    serDevice.sendData(buffer);
+    
+    //wait for acknowledgement
+    waitForAck();  
+}
+
+//fcn to convert string to lowercase
+void lowerCase(char *src) {
+    int i=0;;
+    while(src[i] != '\0') {
+        if((src[i] > 64) && (src[i] < 91)) {
+            src[i]+=32;
+        }
+        i++;
+    }
+    return;
+}
+
+//function to perform bitwise inversion
+int invert(int value) {
+    if (value == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+// Callback routine is interrupt activated by a debounced pb hit
+void pb1_hit_callback (void) {
+    if(power==PHIGH)    // NEW
+        power=PLOW;     // NEW
+    else                // NEW
+        power=PHIGH;    // NEW
+}
+void pb2_hit_callback (void) {
+    if(angle<90)
+        angle++;
+    else if(angle>=90) 
+        angle=0;
+}
+void pb3_hit_callback (void) {
+    if(angle>0)
+        angle--;
+    else if(angle<=0)
+        angle=90;
+}
+void pb4_hit_callback (void) {
+    fire++;
+}
+
+//func. to get world
+void getworld (int**world, char *World){
+    int i;
+    char temp[3];
+    
+    //allocate world
+    *world = (int*)malloc(sizeof(int)*(((World[2]<<8)+World[3])*4+2));
+    
+    //get it
+    (*world)[0]=(World[0]<<8)+World[1];
+    (*world)[1]=(World[2]<<8)+World[3];
+    for(i=0;i<((*world)[1]*4);i++){
+        temp[0] = World[(2*i)+4];
+        temp[1] = World[(2*i)+5];
+        temp[2] = '\0';   
+        sscanf(temp, "%d", &((*world)[i+2]));            
+    }
+}
